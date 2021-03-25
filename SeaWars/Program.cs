@@ -4,15 +4,18 @@ namespace SeaWars
 {
      class Program
     {
+        static char ShipSymbol = '!';
         private static void Main(string[] args)
         {
             //Запуск игры
             FieldParams _fieldParams = GetFieldParams();
             Field _playerField = CreateField(_fieldParams);
             Field _botField = CreateField(_fieldParams);
-            _playerField.DrawField();          
+            _playerField.DrawField();
+            _botField.DrawField();
           //  _playerField.DrawBackField();
-          //  _playerField.Shoot();
+            Shoot(_botField, false);
+            Shoot(_playerField, true);
         
 
 
@@ -56,7 +59,7 @@ namespace SeaWars
 
             Random rand = new Random();
             char SymbolToPrint = '.';
-            char ShipSymbol = '!';
+            
 
             int _gridNumber = 49;
             int _gridLetter = 65;
@@ -104,6 +107,56 @@ namespace SeaWars
             return _warField;
         }
 
+        public static void Shoot(Field FieldToShoot, bool IsBot)
+        {
+            int x;
+            int y;
+            Console.WriteLine(FieldToShoot.fieldSymbols.Length);
+            if (!IsBot)
+            {
+                (y, x) = GetShootCoordinates();
+            }
+            else
+            {
+                (y, x) = GetShootCoordinatesForBot(FieldToShoot);
+            }
+            //Console.WriteLine(botField.fieldSymbols[y, x] + " "+ botField.fieldSymbols[x, y] + " " + botField.fieldSymbols[x-1, y-1] + " " + botField.fieldSymbols[x - 1, y] + " " + botField.fieldSymbols[x, y - 1]);
+            if (IsHit(y, x, FieldToShoot))
+            {
+                Console.WriteLine("kchau");
+            }
+            else
+            {
+                Console.WriteLine("shit");
+            }
+        }
+        public static bool IsHit(int CoordinateY, int CoordinateX, Field botField)
+        {
+            if(botField.fieldSymbols[CoordinateY, CoordinateX] == ShipSymbol)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static (int,int) GetShootCoordinates()
+        {
+            int CoordinateY = Convert.ToInt32(Console.ReadLine());
+            char TempCoordinateX = Convert.ToChar(Console.ReadLine());
+            int CoordinateX = (int)TempCoordinateX - 64;
+            return (CoordinateY, CoordinateX);
+
+        }
+        public static (int, int) GetShootCoordinatesForBot( Field FieldToShoot)
+        {
+           // UI.WriteASentence(ConsoleColor.Cyan, "Wait,enemy is attacking you!");
+            System.Threading.Thread.Sleep(1500);
+            Random rand = new Random();        
+            int CoordinateY = rand.Next(1, 10);  // надо 10 заменить на длинну и высоту массива          
+            int CoordinateX = rand.Next(1, 10);
+            return (CoordinateY, CoordinateX);
+
+        }
         public struct Field
         {
             public FieldParams myfieldParams;
@@ -125,12 +178,14 @@ namespace SeaWars
                 }
             }
 
-            public void DrawBotField()
+            public void DrawBackField()
             {
                 for (int i = 0; i < myfieldParams.height; i++)
                 {
                     for (int j = 0; j < myfieldParams.wight; j++)
+
                         Console.Write(fieldSymbols[i, j]);
+
                     Console.WriteLine();
                 }
             }
