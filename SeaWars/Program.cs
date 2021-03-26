@@ -4,158 +4,215 @@ namespace SeaWars
 {
      class Program
     {
+        //symbols
         static char ShipSymbol = '!';
+        static char DiedShipSymbol = '#';
+        static char LoseShoot = '^';
+        static char EmptyCell = '.';
+        static bool ContinueGame = true;
+
         private static void Main(string[] args)
         {
-            //Запуск игры
-            FieldParams _fieldParams = GetFieldParams();
-            Field _playerField = CreateField(_fieldParams);
-            Field _botField = CreateField(_fieldParams);
-            _playerField.DrawField();
-            _botField.DrawField();
-          //  _playerField.DrawBackField();
-            Shoot(_botField, false);
-            Shoot(_playerField, true);
-        
-
-
-            //Взятие данных поля
-            //Создание поля
-            //Отрисовка поля
-            //Отрисовка пустого поля где будет выстрел
-            //Создание Поля бота
-
-            //Ход игрока
-            //Изменение 2-го поля
-
-            //Ход ИИ
-            //Изменеие поля игрока
-
-            //(Выполняеться пока у игрока и бота есть не убитые корабли)
-
-            // Остановка игр если у кого-то нет кораблей
+            ShowSettings();
+            GameCycle();            
         }
+        public static void ShowSettings()
+        {
+            Console.BackgroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("Hello, nice too see you hear");
+            Console.WriteLine("Short info for you");
+            Console.WriteLine("Ship symbol is - " + ShipSymbol);
+            Console.WriteLine("Symbol when a ship is hitted is - " + DiedShipSymbol);
+            Console.WriteLine("Symbol when a missed shoot - " + DiedShipSymbol);
+            Console.WriteLine("Enter anything");
+            Console.ReadLine();
+            Console.ResetColor();
+            Console.Clear();
 
+        }
         public static FieldParams GetFieldParams()
         {
-            int Wight = Convert.ToInt32(Console.ReadLine());
-            int Height = Convert.ToInt32(Console.ReadLine());
-            int Ships = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter Height of Field");
+            int height = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter Width of Field");
+            int width = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter a number of Ships");
+            int ships = Convert.ToInt32(Console.ReadLine());
 
             FieldParams newParams = new FieldParams();
-            newParams.wight = Wight+1;
-            newParams.height = Height+1;
-            newParams.ships = Ships;
+            newParams.width = width + 1;
+            newParams.height = height + 1;
+            newParams.ships = ships;
 
             return newParams;
         }
-
         public static Field CreateField(FieldParams fieldParams)
         {
-            char[,] field = new char[fieldParams.wight, fieldParams.height];
-            int _height = fieldParams.height;
-            int _width = fieldParams.wight;
-            int _ships = fieldParams.ships;
+            char[,] field = new char[fieldParams.width, fieldParams.height];
+            int height = fieldParams.height;
+            int width = fieldParams.width;
+            int ships = fieldParams.ships;
 
             Random rand = new Random();
-            char SymbolToPrint = '.';
-            
-
-            int _gridNumber = 49;
-            int _gridLetter = 65;
+                      
+            int gridNumber = 49;
+            int gridLetter = 65;
 
 
-            for (int i = 0; i < _height; i++)
+            for (int i = 0; i < height; i++)
             {
-                for (int j = 0; j < _width; j++)
+                for (int j = 0; j < width; j++)
                 {
-                    field[i, j] = SymbolToPrint;
+                    field[i, j] = EmptyCell;
 
                     if (i==0 && j == 0)
                     {
-                        field[i, j] = SymbolToPrint;
+                        field[i, j] = EmptyCell;
                     }
                     if (i == 0 && j!=0)
-                    {
-                       
-                        field[i, j] = (char)_gridLetter;
-                        _gridLetter++;
+                    {                       
+                        field[i, j] = (char)gridLetter;
+                        gridLetter++;
                     }
                     if (i != 0 && j == 0)
                     {
-                        field[i, j] = (char)_gridNumber;
-                        _gridNumber++;
-                    }                   
-                   
+                        field[i, j] = (char)gridNumber;
+                        gridNumber++;
+                    }                                     
                 }                 
             }
-
-            int _setedShips = 0;
-
-                while (_setedShips< _ships)
+            int setedShips = 0;
+                while (setedShips<ships)
             {
-                int ShipPosY = rand.Next(1, _height);
-                int ShipPosX = rand.Next(1, _height);
-                if (field[ShipPosY, ShipPosX] != ShipSymbol)
+                int ShipPosY = rand.Next(1, height);
+                int ShipPosX = rand.Next(1, height);
+                if (CanSetShip(field, ShipPosY, ShipPosX))
                 {
                     field[ShipPosY, ShipPosX] = ShipSymbol;
-                    _setedShips++;
+                    setedShips++;
                 }          
             }
                                   
-            Field _warField = new Field(fieldParams, field);
-            return _warField;
+            Field warField = new Field(fieldParams, field);
+            return warField;
         }
-
-        public static void Shoot(Field FieldToShoot, bool IsBot)
+        public static bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
+        {
+            if (field[shipPosY, shipPosX] != ShipSymbol && field[shipPosY, shipPosX - 1] != ShipSymbol &&
+                field[shipPosY-1, shipPosX - 1] != ShipSymbol && field[shipPosY-1, shipPosX] != ShipSymbol)     
+                return true;
+            return false;
+                
+        }
+        public static void Shoot(ref Field fieldToShoot, bool isBot)
         {
             int x;
             int y;
-            Console.WriteLine(FieldToShoot.fieldSymbols.Length);
-            if (!IsBot)
+         
+            if (!isBot)
             {
                 (y, x) = GetShootCoordinates();
             }
             else
             {
-                (y, x) = GetShootCoordinatesForBot(FieldToShoot);
+                (y, x) = GetShootCoordinatesForBot(fieldToShoot);
             }
             //Console.WriteLine(botField.fieldSymbols[y, x] + " "+ botField.fieldSymbols[x, y] + " " + botField.fieldSymbols[x-1, y-1] + " " + botField.fieldSymbols[x - 1, y] + " " + botField.fieldSymbols[x, y - 1]);
-            if (IsHit(y, x, FieldToShoot))
+            if (IsHit(y, x, fieldToShoot))
             {
-                Console.WriteLine("kchau");
+                Console.WriteLine("It is HIT"); // a bit shit
+                fieldToShoot.fieldSymbols[y, x] = DiedShipSymbol;
+                fieldToShoot.myfieldParams.ships--;
+                if (fieldToShoot.myfieldParams.ships == 0)
+                {
+                    ContinueGame = false;// stop game
+                }
             }
             else
             {
-                Console.WriteLine("shit");
+                Console.WriteLine("Miss..");
+                fieldToShoot.fieldSymbols[y, x] = LoseShoot;
             }
         }
-        public static bool IsHit(int CoordinateY, int CoordinateX, Field botField)
+        public static bool IsHit(int coordinateY, int coordinateX, Field botField)
         {
-            if(botField.fieldSymbols[CoordinateY, CoordinateX] == ShipSymbol)
+            if(botField.fieldSymbols[coordinateY, coordinateX] == ShipSymbol)
             {
                 return true;
             }
             return false;
         }
-
         public static (int,int) GetShootCoordinates()
         {
+            Console.WriteLine("Enter a number for shoot");
             int CoordinateY = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter a letter for shoot");
             char TempCoordinateX = Convert.ToChar(Console.ReadLine());
             int CoordinateX = (int)TempCoordinateX - 64;
             return (CoordinateY, CoordinateX);
 
         }
-        public static (int, int) GetShootCoordinatesForBot( Field FieldToShoot)
+        public static (int, int) GetShootCoordinatesForBot(Field fieldToShoot)
         {
-           // UI.WriteASentence(ConsoleColor.Cyan, "Wait,enemy is attacking you!");
+            Console.WriteLine("Wait,enemy is attacking you!");           
             System.Threading.Thread.Sleep(1500);
             Random rand = new Random();        
-            int CoordinateY = rand.Next(1, 10);  // надо 10 заменить на длинну и высоту массива          
-            int CoordinateX = rand.Next(1, 10);
-            return (CoordinateY, CoordinateX);
+            int coordinateY = rand.Next(1, fieldToShoot.myfieldParams.height);           
+            int coordinateX = rand.Next(1, fieldToShoot.myfieldParams.width);
+            return (coordinateY, coordinateX);
 
+        }
+        public static void CheckAndCongratulateWinner(Field botField)
+        {
+            if (botField.myfieldParams.ships == 0)
+            {
+                Console.WriteLine("Player Win!!");
+            }
+            else
+            {
+                Console.WriteLine("Bot Win!!");
+            }
+        }
+        public static void GameCycle()
+        {
+            FieldParams _fieldParams = GetFieldParams();
+            Field _playerField = CreateField(_fieldParams);
+            Field _botField = CreateField(_fieldParams);
+            Console.Clear();
+
+            while (ContinueGame)
+            {
+                _playerField.DrawField();
+             //   _botField.DrawField();
+                _botField.DrawHiddenField();
+
+                Shoot(ref _botField, false);
+                Shoot(ref _playerField, true);
+
+                System.Threading.Thread.Sleep(1000);
+                Console.Clear();
+            }
+            CheckAndCongratulateWinner(_botField);
+            AskForNewGame();
+        }
+        public static void AskForNewGame()
+        {
+            Console.WriteLine("Want to play Again?");
+            Console.WriteLine("If Yes, write 1, If No write 0");
+            int playAgain = Convert.ToInt32(Console.ReadLine());
+            switch (playAgain)
+            {
+                case 0:
+                    Console.Write("Thanks for playing))");
+                    break;
+                case 1:
+                    ContinueGame = true;
+                    GameCycle();
+                    break;
+                default:
+                    Console.Write("Thanks for playing))");
+                    break;
+            }
         }
         public struct Field
         {
@@ -167,34 +224,38 @@ namespace SeaWars
                 myfieldParams = fieldParams;
                 fieldSymbols = newFielSymbols;
             }
-
             public void DrawField()
             {
                 for (int i = 0; i < myfieldParams.height; i++)
                 {
-                    for (int j = 0; j < myfieldParams.wight; j++)
+                    for (int j = 0; j < myfieldParams.width; j++)
                         Console.Write(fieldSymbols[i, j]);
                     Console.WriteLine();
                 }
             }
-
-            public void DrawBackField()
+            public void DrawHiddenField()
             {
                 for (int i = 0; i < myfieldParams.height; i++)
                 {
-                    for (int j = 0; j < myfieldParams.wight; j++)
-
-                        Console.Write(fieldSymbols[i, j]);
-
+                    for (int j = 0; j < myfieldParams.width; j++)
+                    {
+                        if(fieldSymbols[i, j] == ShipSymbol)
+                        {
+                            Console.Write(EmptyCell);
+                        }
+                        else
+                        {
+                            Console.Write(fieldSymbols[i, j]);
+                        }
+                      
+                    }                      
                     Console.WriteLine();
                 }
             }
-
         }
-
         public struct FieldParams
         {
-            public int wight;
+            public int width;
             public int height;
             public int ships;
         }
