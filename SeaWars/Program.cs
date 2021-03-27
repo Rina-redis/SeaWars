@@ -1,20 +1,51 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace SeaWars
 {
      class Program
     {
-        //symbols
+        //i = y, j = x      
+        #region
         static char ShipSymbol = '!';
         static char DiedShipSymbol = '#';
         static char LoseShoot = '^';
         static char EmptyCell = '.';
         static bool ContinueGame = true;
+        #endregion symbols
 
         private static void Main(string[] args)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             ShowSettings();
-            GameCycle();            
+            GameCycle();
+            sw.Stop();
+            Console.WriteLine("Ms =" + sw.Elapsed);
+        }
+
+        // Game
+        public static void GameCycle()
+        {
+            FieldParams _fieldParams = GetFieldParams();
+            Field _playerField = CreateField(_fieldParams);
+            Field _botField = CreateField(_fieldParams);
+            Console.Clear();
+
+            while (ContinueGame)
+            {
+                _playerField.DrawField();
+                //   _botField.DrawField();
+                _botField.DrawHiddenField();
+
+                Shoot(ref _botField, false);
+                Shoot(ref _playerField, true);
+
+                System.Threading.Thread.Sleep(1000);
+                Console.Clear();
+            }
+            CheckAndCongratulateWinner(_botField);
+            AskForNewGame();
         }
         public static void ShowSettings()
         {
@@ -30,72 +61,38 @@ namespace SeaWars
             Console.Clear();
 
         }
-        public static FieldParams GetFieldParams()
+        public static void AskForNewGame()
         {
-            Console.WriteLine("Enter Height of Field");
-            int height = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Enter Width of Field");
-            int width = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Enter a number of Ships");
-            int ships = Convert.ToInt32(Console.ReadLine());
-
-            FieldParams newParams = new FieldParams();
-            newParams.width = width + 1;
-            newParams.height = height + 1;
-            newParams.ships = ships;
-
-            return newParams;
+            Console.WriteLine("Want to play Again?");
+            Console.WriteLine("If Yes, write 1, If No write 0");
+            int playAgain = Convert.ToInt32(Console.ReadLine());
+            switch (playAgain)
+            {
+                case 0:
+                    Console.Write("Thanks for playing))");
+                    break;
+                case 1:
+                    ContinueGame = true;
+                    GameCycle();
+                    break;
+                default:
+                    Console.Write("Thanks for playing))");
+                    break;
+            }
         }
-        public static Field CreateField(FieldParams fieldParams)
+        public static void CheckAndCongratulateWinner(Field botField)
         {
-            char[,] field = new char[fieldParams.width, fieldParams.height];
-            int height = fieldParams.height;
-            int width = fieldParams.width;
-            int ships = fieldParams.ships;
-
-            Random rand = new Random();
-                      
-            int gridNumber = 49;
-            int gridLetter = 65;
-
-
-            for (int i = 0; i < height; i++)
+            if (botField.myfieldParams.ships == 0)
             {
-                for (int j = 0; j < width; j++)
-                {
-                    field[i, j] = EmptyCell;
-
-                    if (i==0 && j == 0)
-                    {
-                        field[i, j] = EmptyCell;
-                    }
-                    if (i == 0 && j!=0)
-                    {                       
-                        field[i, j] = (char)gridLetter;
-                        gridLetter++;
-                    }
-                    if (i != 0 && j == 0)
-                    {
-                        field[i, j] = (char)gridNumber;
-                        gridNumber++;
-                    }                                     
-                }                 
+                Console.WriteLine("Player Win!!");
             }
-            int setedShips = 0;
-                while (setedShips<ships)
+            else
             {
-                int ShipPosY = rand.Next(1, height);
-                int ShipPosX = rand.Next(1, height);
-                if (CanSetShip(field, ShipPosY, ShipPosX))
-                {
-                    field[ShipPosY, ShipPosX] = ShipSymbol;
-                    setedShips++;
-                }          
+                Console.WriteLine("Bot Win!!");
             }
-                                  
-            Field warField = new Field(fieldParams, field);
-            return warField;
         }
+
+        //Logic, shoots, coordinates
         public static bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
         {
             if (field[shipPosY, shipPosX] != ShipSymbol && field[shipPosY, shipPosX - 1] != ShipSymbol &&
@@ -144,10 +141,12 @@ namespace SeaWars
         }
         public static (int,int) GetShootCoordinates()
         {
+            
             Console.WriteLine("Enter a number for shoot");
             int CoordinateY = Convert.ToInt32(Console.ReadLine());
             Console.WriteLine("Enter a letter for shoot");
-            char TempCoordinateX = Convert.ToChar(Console.ReadLine());
+            string toUpper = Convert.ToString(Console.ReadLine()).ToUpper();
+            char TempCoordinateX = Convert.ToChar(toUpper);        
             int CoordinateX = (int)TempCoordinateX - 64;
             return (CoordinateY, CoordinateX);
 
@@ -162,58 +161,8 @@ namespace SeaWars
             return (coordinateY, coordinateX);
 
         }
-        public static void CheckAndCongratulateWinner(Field botField)
-        {
-            if (botField.myfieldParams.ships == 0)
-            {
-                Console.WriteLine("Player Win!!");
-            }
-            else
-            {
-                Console.WriteLine("Bot Win!!");
-            }
-        }
-        public static void GameCycle()
-        {
-            FieldParams _fieldParams = GetFieldParams();
-            Field _playerField = CreateField(_fieldParams);
-            Field _botField = CreateField(_fieldParams);
-            Console.Clear();
-
-            while (ContinueGame)
-            {
-                _playerField.DrawField();
-             //   _botField.DrawField();
-                _botField.DrawHiddenField();
-
-                Shoot(ref _botField, false);
-                Shoot(ref _playerField, true);
-
-                System.Threading.Thread.Sleep(1000);
-                Console.Clear();
-            }
-            CheckAndCongratulateWinner(_botField);
-            AskForNewGame();
-        }
-        public static void AskForNewGame()
-        {
-            Console.WriteLine("Want to play Again?");
-            Console.WriteLine("If Yes, write 1, If No write 0");
-            int playAgain = Convert.ToInt32(Console.ReadLine());
-            switch (playAgain)
-            {
-                case 0:
-                    Console.Write("Thanks for playing))");
-                    break;
-                case 1:
-                    ContinueGame = true;
-                    GameCycle();
-                    break;
-                default:
-                    Console.Write("Thanks for playing))");
-                    break;
-            }
-        }
+   
+        //Fields
         public struct Field
         {
             public FieldParams myfieldParams;
@@ -258,6 +207,72 @@ namespace SeaWars
             public int width;
             public int height;
             public int ships;
+        }
+        public static FieldParams GetFieldParams()
+        {
+            Console.WriteLine("Enter Height of Field");
+            int height = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter Width of Field");
+            int width = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter a number of Ships");
+            int ships = Convert.ToInt32(Console.ReadLine());
+
+            FieldParams newParams = new FieldParams();
+            newParams.width = width + 1;
+            newParams.height = height + 1;
+            newParams.ships = ships;
+
+            return newParams;
+        }
+        public static Field CreateField(FieldParams fieldParams)
+        {          
+            char[,] field = new char[fieldParams.width, fieldParams.height];
+            int height = fieldParams.height;
+            int width = fieldParams.width;
+            int ships = fieldParams.ships;
+
+            Random rand = new Random();
+
+            int gridNumber = 49;
+            int gridLetter = 65;
+
+            for (int i = 0; i < height; i++) //почему-то поле может быть только квадратным
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    field[i, j] = EmptyCell;
+
+                    if (i == 0 && j == 0)
+                    {
+                        field[i, j] = EmptyCell;
+                    }
+                    if (i == 0 && j != 0)
+                    {
+                        field[i, j] = (char)gridLetter;
+                        gridLetter++;
+                    }
+                    if (i != 0 && j == 0)
+                    {
+                        field[i, j] = (char)gridNumber;
+                        gridNumber++;
+                    }
+                }
+            }
+
+            int setedShips = 0;
+            while (setedShips < ships)
+            {
+                int ShipPosY = rand.Next(1, height);
+                int ShipPosX = rand.Next(1, height);
+                if (CanSetShip(field, ShipPosY, ShipPosX))
+                {
+                    field[ShipPosY, ShipPosX] = ShipSymbol;
+                    setedShips++;
+                }
+            }
+
+            Field warField = new Field(fieldParams, field);
+            return warField;
         }
     }
 }
