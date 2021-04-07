@@ -32,11 +32,11 @@ namespace SeaWars
             Field _botField = CreateField(_fieldParams);
             Console.Clear();
 
-            while (ContinueGame)
+            while (CanPlay())
             {
-                _playerField.DrawField();
+                DrawField(_playerField);
                 //   _botField.DrawField();
-                _botField.DrawHiddenField();
+                DrawHiddenField(_botField);
 
                 Shoot(ref _botField, false);
                 Shoot(ref _playerField, true);
@@ -91,6 +91,10 @@ namespace SeaWars
                 Console.WriteLine("Bot Win!!");
             }
         }
+        public static bool CanPlay()
+        {
+            return ContinueGame;
+        }
 
         //Logic, shoots, coordinates
         public static bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
@@ -100,6 +104,10 @@ namespace SeaWars
                 return true;
             return false;
                 
+        }
+        public static void StopGame()
+        {
+            ContinueGame = false;
         }
         public static void Shoot(ref Field fieldToShoot, bool isBot)
         {
@@ -122,7 +130,7 @@ namespace SeaWars
                 fieldToShoot.myfieldParams.ships--;
                 if (fieldToShoot.myfieldParams.ships == 0)
                 {
-                    ContinueGame = false;// stop game
+                    StopGame();
                 }
             }
             else
@@ -131,9 +139,9 @@ namespace SeaWars
                 fieldToShoot.fieldSymbols[y, x] = LoseShoot;
             }
         }
-        public static bool IsHit(int coordinateY, int coordinateX, Field botField)
+        public static bool IsHit(int coordinateY, int coordinateX, Field fieldToShoot)
         {
-            if(botField.fieldSymbols[coordinateY, coordinateX] == ShipSymbol)
+            if(fieldToShoot.fieldSymbols[coordinateY, coordinateX] == ShipSymbol)
             {
                 return true;
             }
@@ -161,6 +169,40 @@ namespace SeaWars
             return (coordinateY, coordinateX);
 
         }
+        public static void DrawField(Field FieldToDraw)
+        {
+            char[,] fieldSymbols = FieldToDraw.fieldSymbols;
+            FieldParams myfieldParams = FieldToDraw.myfieldParams;
+            for (int i = 0; i < myfieldParams.height; i++)
+            {
+                for (int j = 0; j < myfieldParams.width; j++)
+                    Console.Write(fieldSymbols[i, j]);
+                Console.WriteLine();
+            }
+
+        }
+         public static void DrawHiddenField(Field FieldToDraw)
+        {
+            char[,] fieldSymbols = FieldToDraw.fieldSymbols;
+            FieldParams myfieldParams = FieldToDraw.myfieldParams;
+            for (int i = 0; i < myfieldParams.height; i++)
+            {
+                for (int j = 0; j < myfieldParams.width; j++)
+                {
+                    if (fieldSymbols[i, j] == ShipSymbol)
+                    {
+                        Console.Write(EmptyCell);
+                    }
+                    else
+                    {
+                        Console.Write(fieldSymbols[i, j]);
+                    }
+
+                }
+                Console.WriteLine();
+            }
+
+        }
    
         //Fields
         public struct Field
@@ -173,34 +215,7 @@ namespace SeaWars
                 myfieldParams = fieldParams;
                 fieldSymbols = newFielSymbols;
             }
-            public void DrawField()
-            {
-                for (int i = 0; i < myfieldParams.height; i++)
-                {
-                    for (int j = 0; j < myfieldParams.width; j++)
-                        Console.Write(fieldSymbols[i, j]);
-                    Console.WriteLine();
-                }
-            }
-            public void DrawHiddenField()
-            {
-                for (int i = 0; i < myfieldParams.height; i++)
-                {
-                    for (int j = 0; j < myfieldParams.width; j++)
-                    {
-                        if(fieldSymbols[i, j] == ShipSymbol)
-                        {
-                            Console.Write(EmptyCell);
-                        }
-                        else
-                        {
-                            Console.Write(fieldSymbols[i, j]);
-                        }
-                      
-                    }                      
-                    Console.WriteLine();
-                }
-            }
+                
         }
         public struct FieldParams
         {
@@ -226,7 +241,7 @@ namespace SeaWars
         }
         public static Field CreateField(FieldParams fieldParams)
         {          
-            char[,] field = new char[fieldParams.width, fieldParams.height];
+            char[,] field = new char[fieldParams.height, fieldParams.width];
             int height = fieldParams.height;
             int width = fieldParams.width;
             int ships = fieldParams.ships;
