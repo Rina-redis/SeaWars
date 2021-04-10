@@ -10,7 +10,7 @@ namespace SeaWars
     {
         static void Main(string[] args)
         {
-            var lobby = new Lobby();
+            Lobby lobby = new Lobby();
             lobby.Start();
         }
     }

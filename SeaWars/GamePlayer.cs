@@ -27,7 +27,7 @@ namespace SeaWars
         public string name;
         public int score = 0;
 
-        public PlayerProfile(string Name) //по приколу тут весит
+        public PlayerProfile(string Name) 
         {
             name = Name;
         }

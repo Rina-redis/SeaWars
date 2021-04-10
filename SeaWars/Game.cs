@@ -38,6 +38,8 @@ namespace SeaWars
             }
         
         }          
+
+
         public static void CongratulateWinner(GamePlayer winner)
         {
             if(winner.playerType != PlayerType.bot)
@@ -53,11 +55,13 @@ namespace SeaWars
         {
             return ContinueGame;
         }
-      
-        //Logic, shoots, coordinates
+        public static void StopGame()
+        {
+            ContinueGame = false;         
+        }
         public static void CreatePlayersAndFields()
         {
-            if (wantToUsePreset())
+            if (WantToUsePreset())
             {
                 UsePreset();
             }           
@@ -71,10 +75,8 @@ namespace SeaWars
                 Console.Clear();
             }
         }
-        public static void StopGame()
-        {
-            ContinueGame = false;
-        }
+      
+
         public static void Shoot(ref Field fieldToShoot, GamePlayer currentPlayer)
         {
             int x;
@@ -176,8 +178,16 @@ namespace SeaWars
             }
 
         }
+        public static bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
+        {
+            if (field[shipPosY, shipPosX] != Constants.ShipSymbol && field[shipPosY, shipPosX - 1] != Constants.ShipSymbol &&
+                field[shipPosY - 1, shipPosX - 1] != Constants.ShipSymbol && field[shipPosY - 1, shipPosX] != Constants.ShipSymbol)
+                return true;
+            return false;
 
-        //Fields
+        }
+
+
         public static Field CreateField(FieldParams fieldParams)
         {
             char[,] field = new char[fieldParams.height, fieldParams.width];
@@ -227,15 +237,7 @@ namespace SeaWars
 
             Field warField = new Field(fieldParams, field);
             return warField;
-        }
-        public static bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
-        {
-            if (field[shipPosY, shipPosX] != Constants.ShipSymbol && field[shipPosY, shipPosX - 1] != Constants.ShipSymbol &&
-                field[shipPosY - 1, shipPosX - 1] != Constants.ShipSymbol && field[shipPosY - 1, shipPosX] != Constants.ShipSymbol)
-                return true;
-            return false;
-
-        }
+        }     
         public static FieldParams GetFieldParams()
         {
             Console.WriteLine("Enter Height of Field");
@@ -301,7 +303,7 @@ namespace SeaWars
                     break;
             }
         }
-        public static bool wantToUsePreset()
+        public static bool WantToUsePreset()
         {
             Console.WriteLine("Want to use a preset?");
             string wantToUsePreset = Console.ReadLine();
