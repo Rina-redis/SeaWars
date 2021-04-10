@@ -14,34 +14,40 @@ namespace SeaWars
         #endregion symbols
         private static GamePlayer _player1;
         private static GamePlayer _player2;
+        private static GamePlayer winner;
         // Game
-        public void Start()
-        {           
-            CreatePlayersAndFields();                   
-            while (CanPlay())
-            {
-                DrawField(_player1);
-                DrawField(_player2);
-
-                Shoot(ref _player2.gameField, _player1);
-                Shoot(ref _player1.gameField, _player2);
-
-                System.Threading.Thread.Sleep(1000);
-                Console.Clear();
-            }
-            CheckAndCongratulateWinner(_player2.gameField);
-            
-        }          
-        public static void CheckAndCongratulateWinner(Field botField)
+        public void Start(int numberOfGames)
         {
-            if (botField.myfieldParams.ships == 0)
+            CreatePlayersAndFields();
+
+            for (int alredyPlayedGames = 0; alredyPlayedGames < numberOfGames; alredyPlayedGames++)
+            {              
+                while (CanPlay())
+                {
+                    DrawField(_player1);
+                    DrawField(_player2);
+
+                    Shoot(ref _player2.gameField, _player1);
+                    Shoot(ref _player1.gameField, _player2);
+
+                    System.Threading.Thread.Sleep(1000);
+                    Console.Clear();
+                }
+                CongratulateWinner(winner);
+                ContinueGame = true;
+            }
+        
+        }          
+        public static void CongratulateWinner(GamePlayer winner)
+        {
+            if(winner.playerType != PlayerType.bot)
             {
-                Console.WriteLine("Player Win!!");
+                winner.playerProfile.score++;
+                Console.WriteLine("Score of "+ winner.playerProfile.name + "is  "+winner.playerProfile.score );
+                Console.WriteLine("Congtatulate to " + winner.playerProfile.name);
             }
             else
-            {
-                Console.WriteLine("Bot Win!!");
-            }
+                Console.WriteLine("Bot wins");
         }
         public static bool CanPlay()
         {
@@ -51,12 +57,19 @@ namespace SeaWars
         //Logic, shoots, coordinates
         public static void CreatePlayersAndFields()
         {
-            FieldParams _fieldParams = GetFieldParams();
-
-            _player1 = new GamePlayer(GetPlayerType(), CreateField(_fieldParams));
-            _player2 = new GamePlayer(GetPlayerType(), CreateField(_fieldParams));
-            Console.Clear();
-
+            if (wantToUsePreset())
+            {
+                UsePreset();
+            }           
+            else
+            {
+                FieldParams _fieldParams = GetFieldParams();
+                _player1 = new GamePlayer(GetPlayerType(), CreateField(_fieldParams));
+                TryToGetNameAndCreatePlayerProfile(_player1);
+                _player2 = new GamePlayer(GetPlayerType(), CreateField(_fieldParams));
+                TryToGetNameAndCreatePlayerProfile(_player2);
+                Console.Clear();
+            }
         }
         public static void StopGame()
         {
@@ -84,6 +97,7 @@ namespace SeaWars
                 if (fieldToShoot.myfieldParams.ships == 0)
                 {
                     StopGame();
+                    winner = currentPlayer; // set winner
                 }
             }
             else
@@ -135,7 +149,7 @@ namespace SeaWars
                         Console.Write(fieldSymbols[i, j]);
                     Console.WriteLine();
                 }
-            }
+           }
             else
                 DrawHiddenField(gamePlayer);
 
@@ -238,6 +252,15 @@ namespace SeaWars
 
             return newParams;
         }
+        public static void TryToGetNameAndCreatePlayerProfile(GamePlayer playerToCheck)
+        {
+            if(playerToCheck.playerType == PlayerType.human)
+            {
+                Console.WriteLine("Enter your name:");
+                string name = Console.ReadLine();
+                playerToCheck.playerProfile = new PlayerProfile(name);
+            }
+        }
         public static PlayerType GetPlayerType()
         {
             string _playerType;
@@ -247,10 +270,7 @@ namespace SeaWars
                 _playerType = Console.ReadLine();
                 switch (_playerType)
                 {
-                    case "human":
-                        Console.WriteLine("Enter your name");
-                        string name = Console.ReadLine();
-                        PlayerProfile profile = new PlayerProfile(name);
+                    case "human":                                   
                         return PlayerType.human;
 
                         break;
@@ -263,6 +283,32 @@ namespace SeaWars
             while (_playerType != "human" && _playerType != "bot"); //bad construction!!
 
             return PlayerType.human;
+        }
+        public static void UsePreset()
+        {
+            Console.WriteLine("Enter a number of preset");
+            int presetNumber = int.Parse(Console.ReadLine());
+            switch (presetNumber)
+            {
+                case 1:
+                    FieldParams fieldParams;
+                    fieldParams.height = 9;
+                    fieldParams.width = 9;
+                    fieldParams.ships = 5;
+                    _player1 = new GamePlayer(PlayerType.human, CreateField(fieldParams));
+                    TryToGetNameAndCreatePlayerProfile(_player1);
+                    _player2 = new GamePlayer(PlayerType.bot, CreateField(fieldParams));
+                    break;
+            }
+        }
+        public static bool wantToUsePreset()
+        {
+            Console.WriteLine("Want to use a preset?");
+            string wantToUsePreset = Console.ReadLine();
+            if (wantToUsePreset == "yes")
+                return true;
+            else
+                return false;
         }
 
     }

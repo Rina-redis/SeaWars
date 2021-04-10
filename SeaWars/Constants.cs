@@ -8,11 +8,9 @@ namespace SeaWars
 {
     class Constants
     {
-
        public const char ShipSymbol = '!';
        public const char DiedShipSymbol = '#';
        public const char LoseShoot = '^';
-       public const char EmptyCell = '.';
-    
+       public const char EmptyCell = '.';   
     }
 }

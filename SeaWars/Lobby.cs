@@ -13,7 +13,7 @@ namespace SeaWars
         public void Start()
         {
             ShowSettings();
-            game.Start();
+            game.Start(NumberOfGamesToPlay());
             AskForNewGame();
         }
 
@@ -28,7 +28,7 @@ namespace SeaWars
                     Console.Write("Thanks for playing))");
                     break;
                 case 1:
-                    game.Start();
+                    Start();
                     break;
                 default:
                     Console.Write("Thanks for playing))");
@@ -49,7 +49,13 @@ namespace SeaWars
             Console.Clear();
 
         }
+        public int NumberOfGamesToPlay()
+        {
+            Console.WriteLine("Enter a number of games which you want to play");
+            int NumberOFGames = int.Parse(Console.ReadLine());
+            Console.Clear();
+            return NumberOFGames;
+        }
 
-            
     }
 }

@@ -9,7 +9,7 @@ namespace SeaWars
     class GamePlayer
     {
         public PlayerType playerType;
-        //  public string playerName;
+        public PlayerProfile playerProfile;
         public Field gameField;
 
         public GamePlayer(PlayerType PlayerType, Field Field)
@@ -25,9 +25,9 @@ namespace SeaWars
     class PlayerProfile
     {
         public string name;
-        public int score;
+        public int score = 0;
 
-        public PlayerProfile(string Name)
+        public PlayerProfile(string Name) //по приколу тут весит
         {
             name = Name;
         }
