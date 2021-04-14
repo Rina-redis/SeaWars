@@ -8,14 +8,45 @@ namespace SeaWars
 {
     class GamePlayer
     {
+        //
         public PlayerType playerType;
         public PlayerProfile playerProfile;
         public Field gameField;
 
-        public GamePlayer(PlayerType PlayerType, Field Field)
+        public GamePlayer(PlayerType PlayerType, Field Field, List<GamePlayer> gamePlayers)
         {
             playerType = PlayerType;
             gameField = Field;
+            gamePlayers.Add(this);
+        }
+
+         public void Shoot(int coordinateX, int coordinateY, Field fieldToShoot)
+        {          
+
+            if (IsHit(coordinateY, coordinateX, fieldToShoot))
+            {
+                Console.WriteLine("It is HIT"); // a bit shit
+                fieldToShoot.fieldSymbols[coordinateY, coordinateX] = Constants.DiedShipSymbol;
+                fieldToShoot.myfieldParams.ships--;
+                //if (fieldToShoot.myfieldParams.ships == 0)
+                //{
+                //    StopGame();
+                //    winner = currentPlayer; // set winner
+                //}
+            }
+            else
+            {
+                Console.WriteLine("Miss..");
+                fieldToShoot.fieldSymbols[coordinateY, coordinateX] = Constants.LoseShoot;
+            }
+        }
+        public bool IsHit(int coordinateY, int coordinateX, Field fieldToShoot)
+        {
+            if (fieldToShoot.fieldSymbols[coordinateY, coordinateX] == Constants.ShipSymbol)
+            {
+                return true;
+            }
+            return false;
         }
     }
     enum PlayerType

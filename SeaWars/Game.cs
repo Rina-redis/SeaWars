@@ -1,194 +1,134 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 
 namespace SeaWars
 {
-
     class Game
     {
-
         //i = y, j = x      
         #region
-        static bool ContinueGame = true;
+         bool ContinueGame = true;
         #endregion symbols
-        private static GamePlayer _player1;
-        private static GamePlayer _player2;
-        private static GamePlayer winner;
+        private  GamePlayer _player1;
+        private  GamePlayer _player2;
+        private  GamePlayer winner;
+        private UI uiRef= new UI();
+         static List<GamePlayer> players = new List<GamePlayer>();
         // Game
         public void Start(int numberOfGames)
         {
             CreatePlayersAndFields();
-
+           
             for (int alredyPlayedGames = 0; alredyPlayedGames < numberOfGames; alredyPlayedGames++)
             {              
                 while (CanPlay())
                 {
-                    DrawField(_player1);
-                    DrawField(_player2);
+                    uiRef.DrawOpenField(_player1);
+                    uiRef.DrawOpenField(_player2);
 
-                    Shoot(ref _player2.gameField, _player1);
-                    Shoot(ref _player1.gameField, _player2);
+                    (int x1, int y1) = GetShootCoordinates(_player1);
+                    _player1.Shoot(x1,y1,_player2.gameField);
+
+                    (int x2, int y2) = GetShootCoordinates(_player2);
+                    _player2.Shoot(x2, y2, _player1.gameField);
+
+                     CheckWinner(players);
 
                     System.Threading.Thread.Sleep(1000);
                     Console.Clear();
                 }
-                CongratulateWinner(winner);
+                uiRef.CongratulateWinner(winner);
                 ContinueGame = true;
             }
         
         }          
 
-
-        public static void CongratulateWinner(GamePlayer winner)
-        {
-            if(winner.playerType != PlayerType.bot)
-            {
-                winner.playerProfile.score++;
-                Console.WriteLine("Score of "+ winner.playerProfile.name + "is  "+winner.playerProfile.score );
-                Console.WriteLine("Congtatulate to " + winner.playerProfile.name);
-            }
-            else
-                Console.WriteLine("Bot wins");
-        }
-        public static bool CanPlay()
+        public  bool CanPlay()
         {
             return ContinueGame;
         }
-        public static void StopGame()
+        public  void StopGame()
         {
             ContinueGame = false;         
         }
-        public static void CreatePlayersAndFields()
+        public  void CreatePlayersAndFields()
         {
-            if (WantToUsePreset())
+            if (uiRef.WantToUsePreset())
             {
                 UsePreset();
             }           
             else
             {
-                FieldParams _fieldParams = GetFieldParams();
-                _player1 = new GamePlayer(GetPlayerType(), CreateField(_fieldParams));
+              
+                FieldParams _fieldParams = uiRef.GetFieldParams();
+
+                _player1 = new GamePlayer(uiRef.GetPlayerType(), CreateField(_fieldParams), players);
                 TryToGetNameAndCreatePlayerProfile(_player1);
-                _player2 = new GamePlayer(GetPlayerType(), CreateField(_fieldParams));
+                
+
+                _player2 = new GamePlayer(uiRef.GetPlayerType(), CreateField(_fieldParams), players);
                 TryToGetNameAndCreatePlayerProfile(_player2);
                 Console.Clear();
             }
         }
-      
+        public void CheckWinner(List<GamePlayer> players)
+        {
+            foreach (GamePlayer player in players)
+            {
+                if(player.gameField.myfieldParams.ships == 0 )
+                {
+                    StopGame();                
+                }
+            }
+        }
 
-        public static void Shoot(ref Field fieldToShoot, GamePlayer currentPlayer)
+        public (int, int) GetShootCoordinates(GamePlayer player)
         {
             int x;
             int y;
-         
-            if (currentPlayer.playerType != PlayerType.bot)
+            if(player.playerType == PlayerType.human)
             {
-                (y, x) = GetShootCoordinates();
+                (x,y)= GetShootCoordinatesForHuman();
             }
             else
             {
-                (y, x) = GetShootCoordinatesForBot(fieldToShoot);
+                (x, y) = GetShootCoordinatesForBot(player.gameField);
             }
-            //Console.WriteLine(botField.fieldSymbols[y, x] + " "+ botField.fieldSymbols[x, y] + " " + botField.fieldSymbols[x-1, y-1] + " " + botField.fieldSymbols[x - 1, y] + " " + botField.fieldSymbols[x, y - 1]);
-            if (IsHit(y, x, fieldToShoot))
-            {
-                Console.WriteLine("It is HIT"); // a bit shit
-                fieldToShoot.fieldSymbols[y, x] = Constants.DiedShipSymbol;
-                fieldToShoot.myfieldParams.ships--;
-                if (fieldToShoot.myfieldParams.ships == 0)
-                {
-                    StopGame();
-                    winner = currentPlayer; // set winner
-                }
-            }
-            else
-            {
-                Console.WriteLine("Miss..");
-                fieldToShoot.fieldSymbols[y, x] = Constants.LoseShoot;
-            }
-        }
-        public static bool IsHit(int coordinateY, int coordinateX, Field fieldToShoot)
-        {
-            if(fieldToShoot.fieldSymbols[coordinateY, coordinateX] == Constants.ShipSymbol)
-            {
-                return true;
-            }
-            return false;
-        }
-        public static (int,int) GetShootCoordinates()
-        {
-            
-            Console.WriteLine("Enter a number for shoot");
-            int CoordinateY = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Enter a letter for shoot");
-            string toUpper = Convert.ToString(Console.ReadLine()).ToUpper();
-            char TempCoordinateX = Convert.ToChar(toUpper);        
-            int CoordinateX = (int)TempCoordinateX - 64;
-            return (CoordinateY, CoordinateX);
 
+            return (x, y);
         }
-        public static (int, int) GetShootCoordinatesForBot(Field fieldToShoot)
+
+        public  (int, int) GetShootCoordinatesForBot(Field field)
         {
             Console.WriteLine("Wait,enemy is attacking!");           
             System.Threading.Thread.Sleep(1500);
             Random rand = new Random();        
-            int coordinateY = rand.Next(1, fieldToShoot.myfieldParams.height);           
-            int coordinateX = rand.Next(1, fieldToShoot.myfieldParams.width);
+            int coordinateY = rand.Next(1, field.myfieldParams.height);           
+            int coordinateX = rand.Next(1, field.myfieldParams.width);
             return (coordinateY, coordinateX);
-
         }
-        public static void DrawField(GamePlayer gamePlayer)
+        public (int, int) GetShootCoordinatesForHuman()
         {
-            char[,] fieldSymbols = gamePlayer.gameField.fieldSymbols;
-            FieldParams myfieldParams = gamePlayer.gameField.myfieldParams;
-
-            if (gamePlayer.playerType == PlayerType.human)
-            {
-                for (int i = 0; i < myfieldParams.height; i++)
-                {
-                    for (int j = 0; j < myfieldParams.width; j++)
-                        Console.Write(fieldSymbols[i, j]);
-                    Console.WriteLine();
-                }
-           }
-            else
-                DrawHiddenField(gamePlayer);
+            Console.WriteLine("Enter a number for shoot");
+            int CoordinateY = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Enter a letter for shoot");
+            string toUpper = Convert.ToString(Console.ReadLine()).ToUpper();
+            char TempCoordinateX = Convert.ToChar(toUpper);
+            int CoordinateX = (int)TempCoordinateX - 64;
+            return (CoordinateX, CoordinateY);
 
         }
-         public static void DrawHiddenField(GamePlayer botGamePlayer)
-        {
-            char[,] fieldSymbols = botGamePlayer.gameField.fieldSymbols;
-            FieldParams myfieldParams = botGamePlayer.gameField.myfieldParams;
-            for (int i = 0; i < myfieldParams.height; i++)
-            {
-                for (int j = 0; j < myfieldParams.width; j++)
-                {
-                    if (fieldSymbols[i, j] == Constants.ShipSymbol)
-                    {
-                        Console.Write(Constants.EmptyCell);
-                    }
-                    else
-                    {
-                        Console.Write(fieldSymbols[i, j]);
-                    }
-
-                }
-                Console.WriteLine();
-            }
-
-        }
-        public static bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
+        public bool CanSetShip(char[,] field, int shipPosY, int shipPosX)
         {
             if (field[shipPosY, shipPosX] != Constants.ShipSymbol && field[shipPosY, shipPosX - 1] != Constants.ShipSymbol &&
                 field[shipPosY - 1, shipPosX - 1] != Constants.ShipSymbol && field[shipPosY - 1, shipPosX] != Constants.ShipSymbol)
                 return true;
             return false;
-
         }
 
-
-        public static Field CreateField(FieldParams fieldParams)
+        public  Field CreateField(FieldParams fieldParams)
         {
             char[,] field = new char[fieldParams.height, fieldParams.width];
             int height = fieldParams.height;
@@ -238,23 +178,8 @@ namespace SeaWars
             Field warField = new Field(fieldParams, field);
             return warField;
         }     
-        public static FieldParams GetFieldParams()
-        {
-            Console.WriteLine("Enter Height of Field");
-            int height = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Enter Width of Field");
-            int width = Convert.ToInt32(Console.ReadLine());
-            Console.WriteLine("Enter a number of Ships");
-            int ships = Convert.ToInt32(Console.ReadLine());
-
-            FieldParams newParams = new FieldParams();
-            newParams.width = width + 1;
-            newParams.height = height + 1;
-            newParams.ships = ships;
-
-            return newParams;
-        }
-        public static void TryToGetNameAndCreatePlayerProfile(GamePlayer playerToCheck)
+       
+        public  void TryToGetNameAndCreatePlayerProfile(GamePlayer playerToCheck)
         {
             if(playerToCheck.playerType == PlayerType.human)
             {
@@ -262,31 +187,8 @@ namespace SeaWars
                 string name = Console.ReadLine();
                 playerToCheck.playerProfile = new PlayerProfile(name);
             }
-        }
-        public static PlayerType GetPlayerType()
-        {
-            string _playerType;
-            do
-            {
-                Console.WriteLine("Enter a type of player (human or bot)");
-                _playerType = Console.ReadLine();
-                switch (_playerType)
-                {
-                    case "human":                                   
-                        return PlayerType.human;
-
-                        break;
-                    case "bot":
-                        return PlayerType.bot;
-
-                        break;
-                }
-            }
-            while (_playerType != "human" && _playerType != "bot"); //bad construction!!
-
-            return PlayerType.human;
-        }
-        public static void UsePreset()
+        }      
+        public  void UsePreset()
         {
             Console.WriteLine("Enter a number of preset");
             int presetNumber = int.Parse(Console.ReadLine());
@@ -297,21 +199,11 @@ namespace SeaWars
                     fieldParams.height = 9;
                     fieldParams.width = 9;
                     fieldParams.ships = 5;
-                    _player1 = new GamePlayer(PlayerType.human, CreateField(fieldParams));
+                    _player1 = new GamePlayer(PlayerType.human, CreateField(fieldParams), players);
                     TryToGetNameAndCreatePlayerProfile(_player1);
-                    _player2 = new GamePlayer(PlayerType.bot, CreateField(fieldParams));
+                    _player2 = new GamePlayer(PlayerType.bot, CreateField(fieldParams), players);
                     break;
             }
-        }
-        public static bool WantToUsePreset()
-        {
-            Console.WriteLine("Want to use a preset?");
-            string wantToUsePreset = Console.ReadLine();
-            if (wantToUsePreset == "yes")
-                return true;
-            else
-                return false;
-        }
-
+        }       
     }
 }
