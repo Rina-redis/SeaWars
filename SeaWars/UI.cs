@@ -27,16 +27,29 @@ namespace SeaWars
 
             return PlayerType.human;
         }
-
         public FieldParams GetFieldParams()
         {
+            int height;
+            int width;
+            int ships;
             Console.WriteLine("Enter Height of Field");
-            int height = Convert.ToInt32(Console.ReadLine());
+            bool result = int.TryParse(Console.ReadLine(), out height);
+            if (!result)
+            {
+                return DumbHuman();                 
+            }
             Console.WriteLine("Enter Width of Field");
-            int width = Convert.ToInt32(Console.ReadLine());
+            bool result1 = int.TryParse(Console.ReadLine(), out width);
+            if (!result1)
+            {
+                return DumbHuman();
+            }
             Console.WriteLine("Enter a number of Ships");
-            int ships = Convert.ToInt32(Console.ReadLine());
-
+            bool result2 = int.TryParse(Console.ReadLine(), out ships);
+            if (!result2)
+            {
+                return DumbHuman();
+            }
             FieldParams newParams = new FieldParams();
             newParams.width = width + 1;
             newParams.height = height + 1;
@@ -44,20 +57,30 @@ namespace SeaWars
 
             return newParams;
         }
+        public FieldParams DumbHuman()
+        {
+            Console.WriteLine("Ты тупой? Цыфру просят. Заново давай всё");
+            return GetFieldParams();
+        }
         public bool WantToUsePreset()
         {
             Console.WriteLine("Want to use a preset?");
             string wantToUsePreset = Console.ReadLine();
             if (wantToUsePreset == "yes")
+            {
                 return true;
+            }               
             else
+            {
                 return false;
+            }            
         }
         public void AskForNewGame()
         {
+            int playAgain;
             Console.WriteLine("Want to play Again?");
             Console.WriteLine("If Yes, write 1, If No write 0");
-            int playAgain = Convert.ToInt32(Console.ReadLine());
+            bool result = int.TryParse(Console.ReadLine(), out playAgain);
             switch (playAgain)
             {
                 case 0:
@@ -86,6 +109,16 @@ namespace SeaWars
             Console.Clear();
 
         }
+        public void ShowResultsOfGame(List<GamePlayer> players)
+        {
+            foreach (GamePlayer player in players)
+            {
+                if(player.playerType != PlayerType.bot)
+                {
+                    Console.WriteLine("Score of " + player.playerProfile.name + " is " + player.playerProfile.score);
+                }           
+            }
+        }
         public void DrawField(GamePlayer gamePlayer)
         {
             if (gamePlayer.playerType == PlayerType.human)
@@ -107,7 +140,6 @@ namespace SeaWars
                     Console.Write(fieldSymbols[i, j]);
                 Console.WriteLine();
             }
-
         }
         public void DrawHiddenField(GamePlayer botGamePlayer)
         {
@@ -125,22 +157,20 @@ namespace SeaWars
                     {
                         Console.Write(fieldSymbols[i, j]);
                     }
-
                 }
                 Console.WriteLine();
             }
-
         }
         public void CongratulateWinner(GamePlayer winner)
         {
             if (winner.playerType != PlayerType.bot)
-            {
-                Console.WriteLine("Score of " + winner.playerProfile.name + "is  " + winner.playerProfile.score);
+            {               
                 Console.WriteLine("Congtatulate to " + winner.playerProfile.name);
             }
             else
+            {
                 Console.WriteLine("Bot wins");
-        }
-       
+            }               
+        }       
     }
 }

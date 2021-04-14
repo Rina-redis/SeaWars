@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SeaWars
 {
-    class Constants
+    struct Constants
     {
        public const char ShipSymbol = '!';
        public const char DiedShipSymbol = '#';

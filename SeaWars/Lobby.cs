@@ -17,13 +17,22 @@ namespace SeaWars
             game.Start(NumberOfGamesToPlay());
             uiRef.AskForNewGame();
         }
+
         public int NumberOfGamesToPlay()
         {
+            int NumberOfGames;
             Console.WriteLine("Enter a number of games which you want to play");
-            int NumberOFGames = int.Parse(Console.ReadLine());
-            Console.Clear();
-            return NumberOFGames;
+             bool result = int.TryParse(Console.ReadLine(), out NumberOfGames);
+            if (result)
+            {
+                return NumberOfGames;
+            }
+            else
+            {
+                Console.WriteLine("Мдэ, тебя просили цыфру, а ты...");
+                return 1;               
+            }
+            Console.Clear();           
         }
-
     }
 }

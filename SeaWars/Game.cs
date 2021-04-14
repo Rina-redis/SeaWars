@@ -16,6 +16,7 @@ namespace SeaWars
         private  GamePlayer winner;
         private UI uiRef= new UI();
          static List<GamePlayer> players = new List<GamePlayer>();
+
         // Game
         public void Start(int numberOfGames)
         {
@@ -34,17 +35,23 @@ namespace SeaWars
                     (int x2, int y2) = GetShootCoordinates(_player2);
                     _player2.Shoot(x2, y2, _player1.gameField);
 
-                     CheckWinner(players);
+                     CheckWinner(_player1,_player2);
 
                     System.Threading.Thread.Sleep(1000);
                     Console.Clear();
                 }
-                uiRef.CongratulateWinner(winner);
+                EndGame();
                 ContinueGame = true;
-            }
-        
+            }       
         }          
 
+
+        public void EndGame()
+        {
+            winner.playerProfile.AddScoreForWinner();
+            uiRef.CongratulateWinner(winner);
+            uiRef.ShowResultsOfGame(players);
+        }
         public  bool CanPlay()
         {
             return ContinueGame;
@@ -61,29 +68,44 @@ namespace SeaWars
             }           
             else
             {
-              
-                FieldParams _fieldParams = uiRef.GetFieldParams();
-
-                _player1 = new GamePlayer(uiRef.GetPlayerType(), CreateField(_fieldParams), players);
-                TryToGetNameAndCreatePlayerProfile(_player1);
-                
-
-                _player2 = new GamePlayer(uiRef.GetPlayerType(), CreateField(_fieldParams), players);
-                TryToGetNameAndCreatePlayerProfile(_player2);
-                Console.Clear();
+                DontUsePreset();              
             }
+        }
+        private void DontUsePreset()
+        {
+            FieldParams _fieldParams = uiRef.GetFieldParams();
+
+            _player1 = new GamePlayer(uiRef.GetPlayerType(), CreateField(_fieldParams), players);
+            TryToGetNameAndCreatePlayerProfile(_player1);
+
+            _player2 = new GamePlayer(uiRef.GetPlayerType(), CreateField(_fieldParams), players);
+            TryToGetNameAndCreatePlayerProfile(_player2);
+            Console.Clear();
         }
         public void CheckWinner(List<GamePlayer> players)
         {
             foreach (GamePlayer player in players)
             {
                 if(player.gameField.myfieldParams.ships == 0 )
-                {
+                {                  
+                    //how to chose another player like winner?
                     StopGame();                
                 }
             }
         }
-
+        public void CheckWinner(GamePlayer player1, GamePlayer player2)
+        {
+           if(player1.gameField.myfieldParams.ships == 0)
+            {
+                winner = player2;
+                StopGame();              
+            }
+            if (player2.gameField.myfieldParams.ships == 0)
+            {
+                winner = player1;
+                StopGame();
+            }
+        }
         public (int, int) GetShootCoordinates(GamePlayer player)
         {
             int x;
@@ -96,10 +118,8 @@ namespace SeaWars
             {
                 (x, y) = GetShootCoordinatesForBot(player.gameField);
             }
-
             return (x, y);
         }
-
         public  (int, int) GetShootCoordinatesForBot(Field field)
         {
             Console.WriteLine("Wait,enemy is attacking!");           
@@ -112,7 +132,12 @@ namespace SeaWars
         public (int, int) GetShootCoordinatesForHuman()
         {
             Console.WriteLine("Enter a number for shoot");
-            int CoordinateY = Convert.ToInt32(Console.ReadLine());
+            int CoordinateY;
+            bool result = int.TryParse(Console.ReadLine(), out CoordinateY);
+            if (!result)
+            {
+                GetShootCoordinatesForHuman();
+            }
             Console.WriteLine("Enter a letter for shoot");
             string toUpper = Convert.ToString(Console.ReadLine()).ToUpper();
             char TempCoordinateX = Convert.ToChar(toUpper);
@@ -124,10 +149,14 @@ namespace SeaWars
         {
             if (field[shipPosY, shipPosX] != Constants.ShipSymbol && field[shipPosY, shipPosX - 1] != Constants.ShipSymbol &&
                 field[shipPosY - 1, shipPosX - 1] != Constants.ShipSymbol && field[shipPosY - 1, shipPosX] != Constants.ShipSymbol)
+            {
                 return true;
-            return false;
+            }
+            else
+            {
+                return false;
+            }
         }
-
         public  Field CreateField(FieldParams fieldParams)
         {
             char[,] field = new char[fieldParams.height, fieldParams.width];
@@ -177,9 +206,8 @@ namespace SeaWars
 
             Field warField = new Field(fieldParams, field);
             return warField;
-        }     
-       
-        public  void TryToGetNameAndCreatePlayerProfile(GamePlayer playerToCheck)
+        }         
+        public void TryToGetNameAndCreatePlayerProfile(GamePlayer playerToCheck)
         {
             if(playerToCheck.playerType == PlayerType.human)
             {
@@ -190,8 +218,9 @@ namespace SeaWars
         }      
         public  void UsePreset()
         {
+            int presetNumber;
             Console.WriteLine("Enter a number of preset");
-            int presetNumber = int.Parse(Console.ReadLine());
+            bool result = int.TryParse(Console.ReadLine(), out presetNumber);            
             switch (presetNumber)
             {
                 case 1:

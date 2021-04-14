@@ -12,9 +12,8 @@ namespace SeaWars
         public int height;
         public int ships;
     }
-    class Field
-    {
-      
+    struct Field
+    {    
        public FieldParams myfieldParams;
        public char[,] fieldSymbols;
 
@@ -23,6 +22,5 @@ namespace SeaWars
                myfieldParams = fieldParams;
                fieldSymbols = newFielSymbols;
             }
-  
     }
 }

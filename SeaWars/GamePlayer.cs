@@ -8,7 +8,7 @@ namespace SeaWars
 {
     class GamePlayer
     {
-        //
+        
         public PlayerType playerType;
         public PlayerProfile playerProfile;
         public Field gameField;
@@ -25,14 +25,9 @@ namespace SeaWars
 
             if (IsHit(coordinateY, coordinateX, fieldToShoot))
             {
-                Console.WriteLine("It is HIT"); // a bit shit
+                Console.WriteLine("It is HIT"); 
                 fieldToShoot.fieldSymbols[coordinateY, coordinateX] = Constants.DiedShipSymbol;
-                fieldToShoot.myfieldParams.ships--;
-                //if (fieldToShoot.myfieldParams.ships == 0)
-                //{
-                //    StopGame();
-                //    winner = currentPlayer; // set winner
-                //}
+                fieldToShoot.myfieldParams.ships--;  
             }
             else
             {
@@ -46,14 +41,18 @@ namespace SeaWars
             {
                 return true;
             }
-            return false;
+            else
+            {
+                return false;
+            }        
         }
     }
     enum PlayerType
     {
         bot, human
     }
-    class PlayerProfile
+
+    class PlayerProfile  //may be a struct?
     {
         public string name;
         public int score = 0;
@@ -61,6 +60,11 @@ namespace SeaWars
         public PlayerProfile(string Name) 
         {
             name = Name;
+        }
+
+        public void AddScoreForWinner()
+        {
+            score++;
         }
     }
 }
