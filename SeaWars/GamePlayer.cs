@@ -13,14 +13,14 @@ namespace SeaWars
         public PlayerProfile playerProfile;
         public Field gameField;
 
-        public GamePlayer(PlayerType PlayerType, Field Field, List<GamePlayer> gamePlayers)
+        public GamePlayer(PlayerType PlayerType, Field Field)
         {
             playerType = PlayerType;
             gameField = Field;
-            gamePlayers.Add(this);
+           
         }
 
-         public void Shoot(int coordinateX, int coordinateY, Field fieldToShoot)
+         public void Shoot(int coordinateX, int coordinateY, ref Field fieldToShoot)
         {          
 
             if (IsHit(coordinateY, coordinateX, fieldToShoot))
@@ -36,32 +36,28 @@ namespace SeaWars
             }
         }
         public bool IsHit(int coordinateY, int coordinateX, Field fieldToShoot)
-        {
-            if (fieldToShoot.fieldSymbols[coordinateY, coordinateX] == Constants.ShipSymbol)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }        
-        }
+          => fieldToShoot.fieldSymbols[coordinateY, coordinateX] == Constants.ShipSymbol;
     }
     enum PlayerType
     {
         bot, human
     }
 
-    class PlayerProfile  //may be a struct?
+    [Serializable]
+    public class PlayerProfile  //may be a struct?
     {
         public string name;
         public int score = 0;
 
-        public PlayerProfile(string Name) 
+        public PlayerProfile(string Name, Dictionary<string, PlayerProfile> profiles) 
         {
             name = Name;
+            profiles.Add(name,(this));
         }
-
+        public PlayerProfile()
+        {
+            
+        }
         public void AddScoreForWinner()
         {
             score++;

@@ -27,7 +27,7 @@ namespace SeaWars
 
             return PlayerType.human;
         }
-        public FieldParams GetFieldParams()
+        public FieldParams CreateFieldParams()
         {
             int height;
             int width;
@@ -60,7 +60,7 @@ namespace SeaWars
         public FieldParams DumbHuman()
         {
             Console.WriteLine("Ты тупой? Цыфру просят. Заново давай всё");
-            return GetFieldParams();
+            return CreateFieldParams();
         }
         public bool WantToUsePreset()
         {
@@ -109,14 +109,11 @@ namespace SeaWars
             Console.Clear();
 
         }
-        public void ShowResultsOfGame(List<GamePlayer> players)
+        public void ShowResultsOfGame(List<PlayerProfile> players)
         {
-            foreach (GamePlayer player in players)
+            foreach (PlayerProfile player in players)
             {
-                if(player.playerType != PlayerType.bot)
-                {
-                    Console.WriteLine("Score of " + player.playerProfile.name + " is " + player.playerProfile.score);
-                }           
+                Console.WriteLine("Score of " + player.name + " is " + player.score);
             }
         }
         public void DrawField(GamePlayer gamePlayer)
