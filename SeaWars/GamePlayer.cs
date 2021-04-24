@@ -49,10 +49,10 @@ namespace SeaWars
         public string name;
         public int score = 0;
 
-        public PlayerProfile(string Name, Dictionary<string, PlayerProfile> profiles) 
+        public PlayerProfile(string Name, List<PlayerProfile> profiles) 
         {
             name = Name;
-            profiles.Add(name,(this));
+            profiles.Add(this);
         }
         public PlayerProfile()
         {

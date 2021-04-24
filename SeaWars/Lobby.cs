@@ -9,14 +9,21 @@ namespace SeaWars
     class Lobby
     {
         private UI uiRef = new UI();
-        static Serializer serializer = new Serializer();    
-        public static Dictionary<string, PlayerProfile> allPlayersProfiles = new();
+        static Serializer serializer = new Serializer();
+        Initializator initializator = new Initializator();
+
+        Dictionary<string, PlayerProfile> allPlayersProfilesDictionary = new();
+        public static List<PlayerProfile> allPlayersProfiles = new();
+        private GamePlayer _player1;
+        private GamePlayer _player2;
+
         public void Start()
         {
-          allPlayersProfiles = serializer.Deserialize();
+           allPlayersProfiles = serializer.Deserialize();
 
             ShowPlayers(allPlayersProfiles);
-            Game game = new Game();
+            InitializePlayers(ref _player1, ref _player2);
+            Game game = new Game(_player1, _player2);
             uiRef.ShowSettings();
             game.Start(NumberOfGamesToPlay());
 
@@ -40,36 +47,71 @@ namespace SeaWars
             Console.Clear();           
         }
 
-
-
-        public void ShowPlayers(Dictionary<string, PlayerProfile> pairs)
+        public void ShowPlayers(List<PlayerProfile> playerProfiles)
         {
-            var values = pairs.Values;
-            foreach(PlayerProfile profile in values)
+           foreach( PlayerProfile profile in playerProfiles)
             {
-                if (profile != null)
-                {                 
-                    Console.WriteLine(profile.name);
-                    Console.WriteLine(profile.score);                    
-                }
-            }
-          
+                Console.WriteLine(profile.name);
+                Console.WriteLine(profile.score);
+            }        
         }
-        //public void ChooseProfile()
-        //{
-        //    int number;
-        //    Console.WriteLine("If you alredy have a player profile wrie 1");
-        //    Console.WriteLine("To createa a new profile write 2");
-        //    bool result = int.TryParse(Console.ReadLine(), out number);
-        //    switch (number)
-        //    { 
-        //        case 1:ShowPlayers(allPlayersProfiles);
+        public void ChooseProfile()
+        {
+            int number;
+            Console.WriteLine("If you alredy have a player profile wrie 1");
+            Console.WriteLine("To createa a new profile write 2");
+            bool result = int.TryParse(Console.ReadLine(), out number);
+            switch (number)
+            {
+                case 1:
+                    ShowPlayers(allPlayersProfiles);
+ 
+                    return;
+                case 2: return;
+            }
+        }
+     
+     
+        public void InitializePlayers(ref GamePlayer player1, ref GamePlayer player2 )
+        {
+            if (uiRef.WantToUsePreset())
+            {
+                UsePreset();
+            }
+            else
+            {
+               DontUsePreset();
+            }
+        }
+        public void UsePreset()
+        {
+            int presetNumber;
+            Console.WriteLine("Enter a number of preset");
+            bool result = int.TryParse(Console.ReadLine(), out presetNumber);
+            switch (presetNumber)
+            {
+                case 1:
+                    FieldParams fieldParams;
+                    fieldParams.height = 9;
+                    fieldParams.width = 9;
+                    fieldParams.ships = 5;
+                    _player1 = new GamePlayer(PlayerType.human, initializator.CreateField(fieldParams));
+                    initializator.TryToGetNameAndCreatePlayerProfile(_player1);
+                    _player2 = new GamePlayer(PlayerType.bot, initializator.CreateField(fieldParams));
+                    break;
+            }
+        }
+        public void DontUsePreset()
+        {
+            FieldParams _fieldParams = uiRef.CreateFieldParams();
 
-        //                return;
+            _player1 = new GamePlayer(uiRef.GetPlayerType(), initializator.CreateField(_fieldParams));
+            initializator.TryToGetNameAndCreatePlayerProfile(_player1);
 
-        //        case 2: return;
-        //    }
+            _player2 = new GamePlayer(uiRef.GetPlayerType(), initializator.CreateField(_fieldParams));
+            initializator.TryToGetNameAndCreatePlayerProfile(_player2);
+            Console.Clear();
+        }
 
-        //}
     }
 }
